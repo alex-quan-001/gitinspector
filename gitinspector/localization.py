@@ -59,7 +59,9 @@ def init():
 				filename = basedir.get_basedir() + "/translations/messages_%s.mo" % lang[0][0:2]
 
 				try:
-					__translation__ = gettext.GNUTranslations(open(filename, "rb"))
+					# Open the file in binary mode without setting line buffering
+					with open(filename, "rb") as f:
+						__translation__ = gettext.GNUTranslations(f)
 				except IOError:
 					__translation__ = gettext.NullTranslations()
 			else:
@@ -68,7 +70,7 @@ def init():
 
 		__enabled__ = True
 		__installed__ = True
-		__translation__.install(True)
+		__translation__.install(names=['gettext'])
 
 def check_compatibility(version):
 	if isinstance(__translation__, gettext.GNUTranslations):
@@ -93,14 +95,17 @@ def get_date():
 
 def enable():
 	if isinstance(__translation__, gettext.GNUTranslations):
-		__translation__.install(True)
-
+		__translation__.install(names=['gettext'])
+		
 		global __enabled__
 		__enabled__ = True
 
 def disable():
+	"""
+	Disables localization and sets the language to plain English.
+	"""
 	global __enabled__
 	__enabled__ = False
-
+	
 	if __installed__:
-		gettext.NullTranslations().install(True)
+		gettext.NullTranslations().install(names=['gettext'])
